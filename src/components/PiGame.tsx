@@ -9,8 +9,9 @@ import GameOverModal from './GameOverModal';
 import { Sparkles, Brain } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const MAX_VISIBLE_DIGITS = 10;
+const MAX_VISIBLE_DIGITS = 7; // Reduced for better focus
 const MAX_MISTAKES = 3;
+const DIGIT_WIDTH = 56; // Width of each digit box (including gap)
 
 const PiGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('idle');
@@ -57,8 +58,8 @@ const PiGame: React.FC = () => {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       
-      // Adjust visible range if needed
-      if (nextIndex >= visibleRange.end - 2) {
+      // Adjust visible range to keep current digit centered
+      if (nextIndex >= visibleRange.start + Math.floor(MAX_VISIBLE_DIGITS / 2)) {
         setVisibleRange(prev => ({
           start: prev.start + 1,
           end: prev.end + 1
@@ -102,6 +103,9 @@ const PiGame: React.FC = () => {
   // Get visible digits
   const visibleDigits = digits.slice(visibleRange.start, visibleRange.end);
 
+  // Calculate transform for sliding effect
+  const slideOffset = -visibleRange.start * DIGIT_WIDTH;
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -125,21 +129,24 @@ const PiGame: React.FC = () => {
         </div>
 
         <div className="mb-8">
-          <div className="flex items-center justify-center mb-6">
+          <div className="flex items-center justify-center mb-6 overflow-hidden">
             <div className="flex items-center">
               <span className="text-4xl font-bold text-gray-800 mr-1">3.</span>
-              <div className="flex overflow-hidden">
-                <div className="flex gap-1 transition-transform duration-300" 
-                  style={{ transform: `translateX(-${visibleRange.start * 48}px)` }}>
-                  {visibleDigits.map((digit, index) => (
+              <div className="relative w-[392px] overflow-hidden"> {/* Fixed width container */}
+                <motion.div 
+                  className="flex gap-1"
+                  animate={{ x: slideOffset }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                >
+                  {digits.map((digit, index) => (
                     <DigitDisplay 
-                      key={visibleRange.start + index} 
-                      digit={digit} 
-                      current={visibleRange.start + index === currentIndex}
+                      key={index}
+                      digit={digit}
+                      current={index === currentIndex}
                       index={index}
                     />
                   ))}
-                </div>
+                </motion.div>
               </div>
             </div>
           </div>
@@ -147,7 +154,7 @@ const PiGame: React.FC = () => {
           <div className="flex justify-center items-center my-2">
             <div className="h-1 w-20 bg-gray-200 rounded-full overflow-hidden">
               <motion.div 
-                className="h-full bg-blue-500" 
+                className="h-full bg-blue-500"
                 animate={{ width: `${(currentIndex / 20) * 100}%` }}
                 transition={{ type: "spring", stiffness: 100 }}
               />

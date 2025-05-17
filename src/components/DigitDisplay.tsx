@@ -26,16 +26,18 @@ const DigitDisplay: React.FC<DigitDisplayProps> = ({ digit, current, index }) =>
     <motion.div
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ 
-        scale: 1, 
+        scale: current ? 1.1 : 1, 
         opacity: 1,
         backgroundColor: digit.status === 'correct' ? '#22C55E' : 
-                         digit.status === 'incorrect' ? '#EF4444' : 
-                         current ? '#FFFFFF' : '#F3F4F6'
+                        digit.status === 'incorrect' ? '#EF4444' : 
+                        current ? '#FFFFFF' : '#F3F4F6'
       }}
       transition={{ 
-        type: 'spring', 
+        type: "spring",
+        stiffness: 400,
+        damping: 25,
         duration: 0.3,
-        delay: Math.min(index * 0.02, 0.3) // Staggered animation but capped
+        delay: Math.min(index * 0.02, 0.3)
       }}
       className={`
         w-12 h-12 sm:w-14 sm:h-14 
@@ -43,8 +45,8 @@ const DigitDisplay: React.FC<DigitDisplayProps> = ({ digit, current, index }) =>
         ${getTextColor()}
         flex items-center justify-center
         rounded-lg text-xl font-semibold
-        shadow-sm transform transition-all
-        ${current ? 'scale-110 z-10' : ''}
+        shadow-sm
+        ${current ? 'ring-4 ring-blue-200 z-10' : ''}
       `}
     >
       {digit.attempted || digit.status === 'correct' ? digit.value : ''}
